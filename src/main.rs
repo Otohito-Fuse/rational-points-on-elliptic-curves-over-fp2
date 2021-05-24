@@ -1,10 +1,12 @@
 const P: u64 = 7; // ここを適宜書き換える。2,3以外の素数で、かつ4で割って3余るものである必要がある。
 
+pub mod characteristic;
 pub mod complexification;
 pub mod identities;
 pub mod inverse;
 pub mod modint;
 pub mod polynomial;
+pub mod rational_point;
 pub mod solution_set;
 
 use crate::complexification::Complex;

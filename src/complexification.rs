@@ -1,4 +1,6 @@
+use crate::characteristic::Characteristic;
 use crate::identities::{Identity, Zero};
+use crate::inverse::Inverse;
 use std::fmt;
 use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -118,6 +120,61 @@ impl<T: Copy + Zero + Identity> Identity for Complex<T> {
         Self {
             real: T::identity(),
             imaginary: T::zero(),
+        }
+    }
+}
+
+impl<T: Copy + Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Eq + Zero + Identity>
+    Complex<T>
+{
+    /// 繰り返し二乗法によるべき乗の計算
+    pub fn modpow(&self, n: u64) -> Self {
+        let mut res_r = T::identity();
+        let mut res_i = T::zero();
+        let mut a = self.real;
+        let mut b = self.imaginary;
+        let mut m = n;
+        loop {
+            if m == 0 {
+                break;
+            }
+            if m % 2 == 1 {
+                res_r = res_r * a - res_i * b;
+                res_i = res_r * b - a * res_i;
+            }
+            a = a * a - b * b;
+            b = a * b + b * a;
+            m = m / 2;
+        }
+        Self {
+            real: res_r,
+            imaginary: res_i,
+        }
+    }
+}
+
+impl<T: Characteristic> Characteristic for Complex<T> {
+    fn characteristic() -> u64 {
+        T::characteristic()
+    }
+}
+
+impl<
+        T: Characteristic
+            + Copy
+            + Add<Output = T>
+            + Mul<Output = T>
+            + Sub<Output = T>
+            + Eq
+            + Zero
+            + Identity,
+    > Inverse for Complex<T>
+{
+    fn inverse(self) -> Option<Complex<T>> {
+        if self.real == T::zero() && self.imaginary == T::zero() {
+            None
+        } else {
+            Some(self.modpow(T::characteristic() * T::characteristic() - 2))
         }
     }
 }
