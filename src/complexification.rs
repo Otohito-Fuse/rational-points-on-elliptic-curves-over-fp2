@@ -13,7 +13,7 @@ pub struct Complex<T> {
 }
 
 impl<T> Complex<T> {
-    /// コンストラクタ。1つめの引数が定数項。2つめが1次の項。3つめと4つめが割るイデアルの生成元の1次の係数と定数項。
+    /// コンストラクタ。1つめの引数が定数項。2つめが1次の項。
     pub fn new(real: T, imaginary: T) -> Self {
         Self {
             real: real,
@@ -37,8 +37,6 @@ impl<T: fmt::Display + Zero + Eq> fmt::Display for Complex<T> {
 }
 
 /// 足し算の実装。
-/// これら演算は、bやcが異なっている場合（すなわち異なる環の元どうしでの演算を試みた場合）、
-/// R\[x\] / (x^2) の元 0 を返すことにする。
 impl<T: Copy + Add<Output = T> + Eq> Add for Complex<T> {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
