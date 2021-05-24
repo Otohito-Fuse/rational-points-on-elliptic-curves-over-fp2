@@ -13,6 +13,7 @@ use crate::complexification::Complex;
 use crate::identities::{Identity, Zero};
 use crate::modint::ModInt;
 use crate::polynomial::Polynomial;
+use crate::rational_point::RationalPoint;
 use crate::solution_set::SolutionSet;
 
 use std::collections::HashSet;
@@ -66,7 +67,7 @@ fn main() {
 
     let g: Polynomial<Complex<ModInt<P>>> = Polynomial::new(&w);
 
-    let s: SolutionSet<(Complex<ModInt<P>>, Complex<ModInt<P>>)> = solve_equation(&f, &g);
+    let set: SolutionSet<(Complex<ModInt<P>>, Complex<ModInt<P>>)> = solve_equation(&f, &g);
 
     if ModInt::<P>::new(16)
         * (ModInt::<P>::new(4) * ModInt::<P>::new(a).modpow(3)
@@ -82,10 +83,94 @@ fn main() {
         g.print_f_of_y(),
         f.print_f_of_x(),
     );
-    print_solutions(&s);
+    print_solutions(&set);
     println!("解の個数は");
-    println!("{}個", s.size());
+    println!("{}個", set.size());
     println!("です。");
+    println!("");
+    println!("有理点の和 P + Q を計算します。");
+
+    println!("P(p + qi, r + si) のpの入力");
+
+    // 係数p
+    let mut p = String::new();
+    std::io::stdin().read_line(&mut p).ok();
+    // usize型に変換
+    let p: u64 = p.trim().parse().ok().unwrap();
+    println!("qの入力");
+    // 係数q
+    let mut q = String::new();
+    std::io::stdin().read_line(&mut q).ok();
+    // usize型に変換
+    let q: u64 = q.trim().parse().ok().unwrap();
+    println!("rの入力");
+    // 係数r
+    let mut r = String::new();
+    std::io::stdin().read_line(&mut r).ok();
+    // usize型に変換
+    let r: u64 = r.trim().parse().ok().unwrap();
+    println!("sの入力");
+    // 係数s
+    let mut s = String::new();
+    std::io::stdin().read_line(&mut s).ok();
+    // usize型に変換
+    let s: u64 = s.trim().parse().ok().unwrap();
+
+    let point_p: RationalPoint<Complex<ModInt<P>>> = RationalPoint::Point(
+        Complex::<ModInt<P>>::new(ModInt::<P>::new(p), ModInt::<P>::new(q)),
+        Complex::<ModInt<P>>::new(ModInt::<P>::new(r), ModInt::<P>::new(s)),
+    );
+
+    if !set.unwrap().contains(&(Complex::<ModInt<P>>::new(ModInt::<P>::new(p), ModInt::<P>::new(q)),
+    Complex::<ModInt<P>>::new(ModInt::<P>::new(r), ModInt::<P>::new(s)))) {
+        println!("入力された点は y^2 = x^3 + ax + b を満たしません。");
+        return;
+    }
+
+    println!("Q(p + qi, r + si) のpの入力");
+
+    // 係数p
+    let mut p = String::new();
+    std::io::stdin().read_line(&mut p).ok();
+    // usize型に変換
+    let p: u64 = p.trim().parse().ok().unwrap();
+    println!("qの入力");
+    // 係数q
+    let mut q = String::new();
+    std::io::stdin().read_line(&mut q).ok();
+    // usize型に変換
+    let q: u64 = q.trim().parse().ok().unwrap();
+    println!("rの入力");
+    // 係数r
+    let mut r = String::new();
+    std::io::stdin().read_line(&mut r).ok();
+    // usize型に変換
+    let r: u64 = r.trim().parse().ok().unwrap();
+    println!("sの入力");
+    // 係数s
+    let mut s = String::new();
+    std::io::stdin().read_line(&mut s).ok();
+    // usize型に変換
+    let s: u64 = s.trim().parse().ok().unwrap();
+
+    let point_q: RationalPoint<Complex<ModInt<P>>> = RationalPoint::Point(
+        Complex::<ModInt<P>>::new(ModInt::<P>::new(p), ModInt::<P>::new(q)),
+        Complex::<ModInt<P>>::new(ModInt::<P>::new(r), ModInt::<P>::new(s)),
+    );
+
+    let point_r: RationalPoint<Complex<ModInt<P>>> = point_p.add_rational_points(
+        &point_q,
+        Complex::<ModInt<P>>::new(ModInt::<P>::new(a), ModInt::<P>::zero()),
+    );
+
+    if !set.unwrap().contains(&(Complex::<ModInt<P>>::new(ModInt::<P>::new(p), ModInt::<P>::new(q)),
+    Complex::<ModInt<P>>::new(ModInt::<P>::new(r), ModInt::<P>::new(s)))) {
+        println!("入力された点は y^2 = x^3 + ax + b を満たしません。");
+        return;
+    }
+
+    println!("P = {}, Q = {} のとき", point_p, point_q);
+    println!("P + Q = {}", point_r);
 }
 
 /// 素数判定
@@ -158,4 +243,34 @@ fn print_solutions(ss: &SolutionSet<(Complex<ModInt<P>>, Complex<ModInt<P>>)>) {
         s.push_str(&"}");
     }
     println!("{}", s);
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::complexification::Complex;
+    use crate::identities::Identity;
+    use crate::modint::ModInt;
+
+    const P: u64 = 7;
+
+    #[test]
+    fn mod_pow_test1() {
+        let x = Complex::<ModInt<P>>::new(ModInt::<P>::new(0), ModInt::<P>::new(2));
+        let y = Complex::<ModInt<P>>::new(ModInt::<P>::new(P - 4), ModInt::<P>::new(0));
+        assert_eq!(x * x, y);
+    }
+
+    #[test]
+    fn inv_test() {
+        for r in 0..P {
+            for i in 0..P {
+                if i == 0 && r == 0 {
+                    continue;
+                }
+                let x = Complex::<ModInt<P>>::new(ModInt::<P>::new(r), ModInt::<P>::new(i));
+                println!("r = {}, i = {}", r, i);
+                assert_eq!(x.modpow(P * P - 1), Complex::<ModInt<P>>::identity());
+            }
+        }
+    }
 }

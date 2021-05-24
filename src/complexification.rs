@@ -139,11 +139,15 @@ impl<T: Copy + Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Eq + Zero +
                 break;
             }
             if m % 2 == 1 {
-                res_r = res_r * a - res_i * b;
-                res_i = res_r * b - a * res_i;
+                let tmp_r = res_r;
+                let tmp_i = res_i;
+                res_r = tmp_r * a - tmp_i * b;
+                res_i = tmp_r * b + a * tmp_i;
             }
-            a = a * a - b * b;
-            b = a * b + b * a;
+            let tmp_a = a;
+            let tmp_b = b;
+            a = tmp_a * tmp_a - tmp_b * tmp_b;
+            b = tmp_a * tmp_b + tmp_b * tmp_a;
             m = m / 2;
         }
         Self {

@@ -65,15 +65,14 @@ impl<T: Neg<Output = T>> Neg for RationalPoint<T> {
     }
 }
 
-impl<
-        T: Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Copy + Eq + Inverse + Identity + A,
-    > RationalPoint<T>
+impl<T: Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Copy + Eq + Inverse + Identity>
+    RationalPoint<T>
 {
     /// 有理点の足し算。aは y^2 = x^3 + ax + b の a。
-    pub fn add_rational_points(self, rhs: Self, a: T) -> Self {
-        match self {
-            RationalPoint::O => rhs,
-            RationalPoint::Point(x1, y1) => match rhs {
+    pub fn add_rational_points(&self, rhs: &Self, a: T) -> Self {
+        match *self {
+            RationalPoint::O => *rhs,
+            RationalPoint::Point(x1, y1) => match *rhs {
                 RationalPoint::O => RationalPoint::Point(x1, y1),
                 RationalPoint::Point(x2, y2) => {
                     if x1 == x2 {
