@@ -24,6 +24,7 @@ impl<T: fmt::Display> fmt::Display for RationalPoint<T> {
     }
 }
 
+/// 本当は演算子のオーバーロードをしたかったが、係数aをstaticに用意するのが無理だったので断念。これは記録です。
 impl<
         T: Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Copy + Eq + Inverse + Identity + A,
     > Add for RationalPoint<T>
@@ -60,6 +61,36 @@ impl<T: Neg<Output = T>> Neg for RationalPoint<T> {
         match self {
             RationalPoint::O => self,
             RationalPoint::Point(x, y) => RationalPoint::Point(x, -y),
+        }
+    }
+}
+
+impl<
+        T: Add<Output = T> + Mul<Output = T> + Sub<Output = T> + Copy + Eq + Inverse + Identity + A,
+    > RationalPoint<T>
+{
+    /// 有理点の足し算。aは y^2 = x^3 + ax + b の a。
+    pub fn add_rational_points(self, rhs: Self, a: T) -> Self {
+        match self {
+            RationalPoint::O => rhs,
+            RationalPoint::Point(x1, y1) => match rhs {
+                RationalPoint::O => RationalPoint::Point(x1, y1),
+                RationalPoint::Point(x2, y2) => {
+                    if x1 == x2 {
+                        if y1 != y2 {
+                            RationalPoint::O
+                        } else {
+                            let id = T::identity();
+                            let m = ((id + id + id) * x1 * x1 + a)
+                                * ((id + id) * y1).inverse().unwrap();
+                            RationalPoint::Point(m * m - x1 - x1, m * (x1 - m * m + x1 + x1) - y1)
+                        }
+                    } else {
+                        let m = (y2 - y1) * ((x2 - x1).inverse().unwrap());
+                        RationalPoint::Point(m * m - x1 - x2, m * (x1 - m * m + x1 + x2) - y1)
+                    }
+                }
+            },
         }
     }
 }
